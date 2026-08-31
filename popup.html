@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; width: 300px; padding: 15px; margin: 0; background: #f5f7fa; text-align: center; }
+        h3 { color: #004c99; margin-top: 0; margin-bottom: 10px; border-bottom: 2px solid #ddd; padding-bottom: 8px; font-size: 15px; }
+        .section-title { font-size: 12px; font-weight: bold; color: #666; margin: 15px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
+        button { width: 100%; padding: 10px; margin-bottom: 8px; font-weight: bold; font-size: 13px; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; color: white; }
+        
+        .btn-hub { background: #004c99; } .btn-hub:hover { background: #003366; }
+        .btn-scan { background: #28a745; } .btn-scan:hover { background: #218838; }
+        .btn-airtable { background: #6f42c1; } .btn-airtable:hover { background: #59339d; }
+        
+        p { font-size: 11px; color: #666; margin-top: 10px; }
+        #status { font-size: 12px; font-weight: 600; margin-top: 10px; min-height: 15px; }
+    </style>
+</head>
+<body>
+    <h3>Controle - CIEE Hub V3.2</h3>
+    
+    <div class="section-title">Mesa de Trabalho</div>
+    <button id="btn_abrir_hub" class="btn-hub">🖥️ 1. Abrir Painel Principal</button>
+    
+    <div class="section-title">Leitores de Tela</div>
+    <button id="btn_enviar_dados" class="btn-scan">🎯 2. Escanear Ticket (Zendesk)</button>
+    <button id="btn_airtable" class="btn-airtable">🟣 3. Escanear Digital (Airtable)</button>
+    
+    <div id="status"></div>
+    
+    <p>As ações do Kairós e do Novo Portal de Talentos foram movidas para o Menu flutuante na própria página.</p>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

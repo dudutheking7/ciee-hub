@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "CIEE Hub Modular",
+  "version": "4.0",
+  "description": "Automação Operacional, IA e Hub de Vagas",
+  "permissions": [
+    "storage",
+    "clipboardRead",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "*://*.ciee.org.br/*",
+    "*://*.cieerj.org.br/*",
+    "*://*.zendesk.com/*",
+    "*://*.sharepoint.com/*",
+    "*://*.airtable.com/*"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "Abrir CIEE Hub",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.zendesk.com/*",
+        "*://*.ciee.org.br/*",
+        "*://*.cieerj.org.br/*",
+        "*://*.sharepoint.com/*",
+        "*://*.airtable.com/*"
+      ],
+      "js": [
+        "js/content/mod-menu.js",
+        "js/content/zendesk-injector.js",
+        "js/content/airtable-scraper.js",
+        "js/content/sharepoint-sniper.js",
+        "js/content/kairos-automations.js"
+      ],
+      "css": [
+        "css/theme.css"
+      ],
+      "all_frames": true
+    }
+  ]
+}
