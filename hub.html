@@ -147,10 +147,18 @@
         .autocomplete-item { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0f0f0; color: #333; }
         .autocomplete-item:hover { background-color: #eef2f5; color: var(--primary-color); font-weight: 600; }
     </style>
+    <link rel="stylesheet" href="css/design-system.css">
 </head>
 <body>
 
 <div id="toast-container"></div>
+
+<div id="command_palette" class="command-palette" aria-hidden="true">
+    <div class="command-panel" role="dialog" aria-modal="true" aria-label="Paleta de comandos">
+        <input id="command_search" type="search" placeholder="Buscar ação rápida... Ex: fila, abertura, logs" autocomplete="off">
+        <div id="command_results" class="command-list"></div>
+    </div>
+</div>
 
 <div class="container">
     
@@ -174,8 +182,23 @@
     </div>
 
     <div id="screen_demanda" class="screen">
-        <h2 style="text-align: center; border: none;">Escolha seu Fluxo de Trabalho</h2>
-        <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 25px;">O sistema possui modos isolados para não misturar dados.</p>
+        <section class="modern-hero">
+            <div class="hero-header">
+                <div>
+                    <span class="eyebrow">Dashboard operacional</span>
+                    <h2 class="hero-title" style="text-align: left; border: none;">Escolha seu fluxo de trabalho</h2>
+                    <p class="hero-subtitle">Mesa mais limpa, ações agrupadas por intenção e atalhos visíveis para acelerar abertura, fila, consultas e relatórios.</p>
+                </div>
+                <button class="command-trigger" data-action="openCommandPalette">⌘ Ctrl + K&nbsp;&nbsp;Comandos</button>
+            </div>
+
+            <div class="dashboard-cards">
+                <div class="dash-card"><h3 id="home_dash_ticket">#</h3><p>Ticket atual</p></div>
+                <div class="dash-card"><h3 id="home_dash_fila">0</h3><p>Pendências na fila</p></div>
+                <div class="dash-card"><h3 id="home_dash_draft">Auto</h3><p>Rascunho inteligente</p></div>
+                <div class="dash-card"><h3>Alt</h3><p>Atalhos produtivos</p></div>
+            </div>
+        </section>
         
         <div class="door-container">
             <div class="door-card individual">
@@ -193,9 +216,10 @@
             </div>
         </div>
         
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="#" data-action="openTabLibre" data-tab="catalogo" style="color: var(--primary-color); font-size: 13px; text-decoration: none; margin-right: 15px;">👥 Consultar Catálogo Livre</a>
-            <a href="#" data-action="openTabLibre" data-tab="relatorios" style="color: var(--primary-color); font-size: 13px; text-decoration: none;">📊 Ver Meus Relatórios</a>
+        <div class="quick-actions-grid" style="margin-top: 24px;">
+            <a href="#" class="quick-action-card" data-action="openTabLibre" data-tab="catalogo"><span class="quick-action-icon">👥</span><span><strong>Catálogo livre</strong><br><small>Consultar consultores, regiões e contatos.</small></span></a>
+            <a href="#" class="quick-action-card" data-action="openTabLibre" data-tab="relatorios"><span class="quick-action-icon">📊</span><span><strong>Relatórios</strong><br><small>Histórico, métricas e backups do dia.</small></span></a>
+            <a href="#" class="quick-action-card" data-action="openTabLibre" data-tab="abertura_ia"><span class="quick-action-icon">🤖</span><span><strong>Abertura IA</strong><br><small>Gerar abertura com apoio inteligente.</small></span></a>
         </div>
     </div>
 

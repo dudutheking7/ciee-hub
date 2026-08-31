@@ -671,3 +671,98 @@ function fecharSupervisao() {
     let demanda = document.getElementById('screen_demanda');
     if(demanda) demanda.classList.add('active');
 }
+// --- COMMAND CENTER (Ctrl+K) ---
+const hubCommands = [
+    { icon: '👤', title: 'Abrir mesa individual', hint: 'Fluxo de ticket único', run: () => iniciarIndividual() },
+    { icon: '🏭', title: 'Entrar no modo fila', hint: 'Linha de montagem', run: () => iniciarFila() },
+    { icon: '📥', title: 'Ver fila de trabalho', hint: 'Acompanhar pendências', run: () => openTabLibre('fila') },
+    { icon: '📝', title: 'Abertura de vaga', hint: 'Formulário principal', run: () => openTabLibre('abertura') },
+    { icon: '🤖', title: 'Abertura IA', hint: 'Assistente beta', run: () => openTabLibre('abertura_ia') },
+    { icon: '⚡', title: 'Super Acomps', hint: 'Acompanhamentos rápidos', run: () => openTabLibre('acomps') },
+    { icon: '📣', title: 'Convocação', hint: 'Gerar solicitação', run: () => openTabLibre('convocacao') },
+    { icon: '👥', title: 'Catálogo', hint: 'Contatos e regiões', run: () => openTabLibre('catalogo') },
+    { icon: '📊', title: 'Relatórios e logs', hint: 'Métricas do dia', run: () => openTabLibre('relatorios') },
+    { icon: '🌙', title: 'Alternar modo escuro', hint: 'Tema visual', run: () => toggleDarkMode() },
+    { icon: '🧹', title: 'Encerrar e limpar mesa', hint: 'Finalizar atendimento', run: () => document.getElementById('btn_encerrar_global')?.click() }
+];
+
+function openCommandPalette() {
+    const palette = document.getElementById('command_palette');
+    const search = document.getElementById('command_search');
+    if (!palette || !search) return;
+    palette.classList.add('active');
+    palette.setAttribute('aria-hidden', 'false');
+    renderCommandResults('');
+    setTimeout(() => search.focus(), 30);
+}
+
+function closeCommandPalette() {
+    const palette = document.getElementById('command_palette');
+    if (!palette) return;
+    palette.classList.remove('active');
+    palette.setAttribute('aria-hidden', 'true');
+}
+
+function renderCommandResults(query = '') {
+    const list = document.getElementById('command_results');
+    if (!list) return;
+    const normalized = query.trim().toLowerCase();
+    const results = hubCommands.filter(cmd => `${cmd.title} ${cmd.hint}`.toLowerCase().includes(normalized));
+    list.innerHTML = results.map((cmd, index) => `
+        <button class="command-item ${index === 0 ? 'is-highlighted' : ''}" data-command-index="${hubCommands.indexOf(cmd)}">
+            <span class="quick-action-icon">${cmd.icon}</span>
+            <span><strong>${cmd.title}</strong><br><small>${cmd.hint}</small></span>
+            ${index === 0 ? '<span class="command-kbd">Enter</span>' : ''}
+        </button>
+    `).join('') || '<div class="command-item">Nenhuma ação encontrada.</div>';
+}
+
+document.addEventListener('keydown', (event) => {
+    const isCommandShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+    if (isCommandShortcut) {
+        event.preventDefault();
+        openCommandPalette();
+        return;
+    }
+    if (event.key === 'Escape') closeCommandPalette();
+    if (event.key === 'Enter' && document.activeElement?.id === 'command_search') {
+        const first = document.querySelector('.command-item[data-command-index]');
+        if (first) first.click();
+    }
+});
+
+document.addEventListener('input', (event) => {
+    if (event.target?.id === 'command_search') renderCommandResults(event.target.value);
+});
+
+document.addEventListener('click', (event) => {
+    if (event.target?.id === 'command_palette') closeCommandPalette();
+    const opener = event.target.closest('[data-action="openCommandPalette"]');
+    if (opener) {
+        event.preventDefault();
+        openCommandPalette();
+        return;
+    }
+    const commandButton = event.target.closest('[data-command-index]');
+    if (!commandButton) return;
+    const command = hubCommands[Number(commandButton.dataset.commandIndex)];
+    if (!command) return;
+    closeCommandPalette();
+    command.run();
+});
+
+function atualizarHomeDashboard() {
+    const filaAtual = typeof filaTrabalho !== 'undefined' ? filaTrabalho : window.filaTrabalho;
+    const filaPendente = Array.isArray(filaAtual) ? filaAtual.filter(item => item.status === 'pendente').length : 0;
+    const ticket = document.getElementById('display_ticket_global')?.innerText || 'Nenhum';
+    const draft = localStorage.getItem('hub_draft');
+    const ticketCard = document.getElementById('home_dash_ticket');
+    const filaCard = document.getElementById('home_dash_fila');
+    const draftCard = document.getElementById('home_dash_draft');
+    if (ticketCard) ticketCard.innerText = ticket && ticket !== 'Nenhum' ? `#${ticket}` : '#';
+    if (filaCard) filaCard.innerText = String(filaPendente);
+    if (draftCard) draftCard.innerText = draft && draft !== '{}' ? 'Sim' : 'Auto';
+}
+
+document.addEventListener('DOMContentLoaded', atualizarHomeDashboard);
+setInterval(atualizarHomeDashboard, 2500);
