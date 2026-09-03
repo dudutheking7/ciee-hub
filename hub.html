@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIEE Hub - Painel Principal V4.0</title>
+    
+    <!-- CSS Modularizado -->
+    <link rel="stylesheet" href="css/theme.css">
+    
+    <style>
+
+/* ========================================== */
+        /* FIX: COMPATIBILIDADE COM MODO ESCURO       */
+        /* ========================================== */
+        body.dark-theme input, 
+        body.dark-theme select, 
+        body.dark-theme textarea,
+        body.dark-theme .tag-container,
+        body.dark-theme .autocomplete-dropdown {
+            background-color: #2d333b !important;
+            color: #cdd9e5 !important;
+            border-color: #444c56 !important;
+        }
+        
+        body.dark-theme .autocomplete-item {
+            color: #cdd9e5 !important;
+            border-bottom: 1px solid #444c56 !important;
+        }
+        
+        body.dark-theme .autocomplete-item:hover {
+            background-color: #373e47 !important;
+        }
+
+
+        /* Apenas variáveis de raiz nativas do design */
+        :root { --primary-color: #004c99; --secondary-color: #007bff; --success-color: #28a745; --bg-color: #f0f2f5; --text-color: #333; --border-color: #e1e5eb; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        
+        /* CORREÇÃO DO BUG DO TOAST: Removido do fluxo do Flexbox */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+
+        .container { width: 100%; max-width: 1050px; background: #fff; padding: 25px 35px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h2 { color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 0; }
+        
+        /* Modos de Entrada */
+        .door-container { display: flex; gap: 20px; margin-top: 30px; margin-bottom: 30px; }
+        .door-card { flex: 1; padding: 25px 20px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; background: #fff; }
+        .door-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.08); transform: translateY(-3px); }
+        .door-card.individual { border-top: 5px solid var(--primary-color); }
+        .door-card.fila { border-top: 5px solid var(--success-color); background: #f9fdfa; }
+        .fila-banner-global { display: none; background: #fd7e14; color: white; padding: 8px 15px; font-weight: bold; text-align: center; font-size: 13px; border-radius: 6px; margin-bottom: 15px; justify-content: space-between; align-items: center; }
+        .fila-banner-global.active { display: flex; animation: fadeIn 0.3s; }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 15px; border: none; background: transparent; cursor: pointer; font-weight: 600; font-size: 14px; color: #666; border-radius: 6px; transition: 0.2s; }
+        .tab-btn:hover { background-color: #eef2f5; color: var(--primary-color); }
+        .tab-btn.active { background-color: var(--primary-color); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #555; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
+        input[type="time"] { padding: 8px; font-size: 15px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--secondary-color); box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
+        textarea.output-box { min-height: 120px; background-color: #f8f9fa; border: 1px solid #ced4da; resize: vertical; line-height: 1.5; color: #2c3e50; }
+        
+        button.action-btn { background-color: var(--success-color); color: white; border: none; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button.action-btn:hover { filter: brightness(0.9); transform: translateY(-1px); }
+        .btn-fixed-text { background-color: #6c757d; color: white; border: none; padding: 10px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; flex: 1; }
+        .btn-fixed-text:hover { background-color: #5a6268; }
+        button.danger-btn { background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-mini { padding: 8px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
+        .btn-mini:active { transform: scale(0.95); }
+
+        .output-wrapper { position: relative; margin-top: 15px; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background-color: var(--secondary-color); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .robot-box { background: #eef5ff; border: 1px dashed #007bff; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center; }
+        
+        .top-bar-ticket { background: #004c99; color: white; padding: 10px 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        .search-bar { margin-bottom: 15px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+        .data-table th, .data-table td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: #f8f9fa; color: #555; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; display: inline-block; text-align: center;}
+        
+        .bg-abertura { background-color: #17a2b8; }
+        .bg-acomp { background-color: #6f42c1; }
+        .bg-envio { background-color: #28a745; }
+        .bg-alt { background-color: #ffc107; color: #333; }
+        .bg-canc { background-color: #dc3545; }
+        .bg-cr { background-color: #fd7e14; }
+        
+        .card-contato { background: #fff; border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .contato-info h4 { margin: 0 0 5px 0; color: var(--primary-color); }
+        .contato-info p { margin: 0; font-size: 13px; color: #666; }
+        .radio-group { display: flex; gap: 20px; margin-top: 10px; }
+        .radio-label { display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer; font-size: 14px; }
+        .radio-label input { width: auto; margin: 0; }
+        .dynamic-field { display: none; background: #fff8e1; padding: 15px; border-radius: 6px; border: 1px solid #ffe082; margin-bottom: 15px; }
+        .dynamic-field.active { display: block; animation: fadeIn 0.3s; }
+        
+        .dg-alert { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none; align-items: center; justify-content: space-between; }
+        .dg-alert.active { display: flex; animation: fadeIn 0.3s; }
+        
+        .extractor-tabs { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .extractor-tab { padding: 5px 15px; cursor: pointer; font-size: 13px; border-radius: 15px; background: #e1e5eb; font-weight: 600;}
+        .extractor-tab.active { background: #007bff; color: white; }
+        .extractor-view { display: none; }
+        .extractor-view.active { display: block; }
+        
+        .panel-solicitante { background: #f1f8ff; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #cce5ff; }
+        .panel-supervisor { background: #fdf7e7; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ffe8a1; }
+        .panel-padrao { background: #e8f4fd; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #b8daff; }
+        .panel-complexo { background: #fdf7e7; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffe8a1; }
+        .input-group-copy { display: flex; gap: 5px; }
+
+        #draft-banner { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; }
+        
+        .dashboard-cards { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;}
+        .dash-card { flex: 1; min-width: 120px; background: #fff; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .dash-card h3 { margin: 0; font-size: 24px; }
+        .dash-card p { margin: 5px 0 0 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Estilo da Tag de Vaga Vinculada (Lote) */
+        .vaga-tag { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #ffe8a1; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: #856404; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s; }
+        .vaga-tag.ok { border-color: #28a745; background: #e8f5e9; color: #155724; }
+        .vaga-tag span.status-icon { font-size: 10px; }
+
+        /* ========================================== */
+        /* ESTILOS DA NOVA ABA: ABERTURA IA (BETA)    */
+        /* ========================================== */
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; min-height: 45px; background: #fff; align-items: center; }
+        .tag-item { display: inline-flex; align-items: center; gap: 5px; background-color: var(--primary-color); color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 600; }
+        .tag-item .remove-tag { cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; border: none; color: white; padding: 0; margin-left: 2px; }
+        .tag-item .remove-tag:hover { background: rgba(255,255,255,0.4); }
+        .tag-input { border: none !important; outline: none !important; box-shadow: none !important; flex: 1; min-width: 150px; font-size: 13px; padding: 4px; margin: 0; }
+        .autocomplete-dropdown { position: absolute; background: white; border: 1px solid var(--border-color); border-radius: 6px; max-height: 200px; overflow-y: auto; width: calc(100% - 30px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; display: none; margin-top: -10px; }
+        .autocomplete-item { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0f0f0; color: #333; }
+        .autocomplete-item:hover { background-color: #eef2f5; color: var(--primary-color); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div class="container">
+    
+    <div id="draft-banner">
+        <span>⚠️ Um rascunho não salvo foi encontrado. Deseja restaurar os dados?</span>
+        <div>
+            <button class="btn-mini" style="background:#28a745; margin-right: 5px;" data-action="restaurarRascunho">Restaurar Dados</button>
+            <button class="btn-mini" style="background:#6c757d;" data-action="descartarRascunho">Descartar</button>
+        </div>
+    </div>
+
+    <div id="screen_login" class="screen active">
+        <div style="max-width: 350px; margin: 40px auto; text-align: center;">
+            <h2>CIEE Hub - Acesso V4.0</h2>
+            <div class="form-group" style="text-align: left; margin-top: 30px;">
+                <label>Sua Assinatura Zendesk (Ex: @nome):</label>
+                <input type="text" id="user_signature" placeholder="Digite sua assinatura para logar nos logs...">
+            </div>
+            <button class="action-btn" data-action="login">Continuar</button>
+        </div>
+    </div>
+
+    <div id="screen_demanda" class="screen">
+        <h2 style="text-align: center; border: none;">Escolha seu Fluxo de Trabalho</h2>
+        <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 25px;">O sistema possui modos isolados para não misturar dados.</p>
+        
+        <div class="door-container">
+            <div class="door-card individual">
+                <h3 style="color: var(--primary-color); margin-top:0;">👤 Atendimento Individual</h3>
+                <p style="font-size: 13px; color: #666; height: 40px; margin-bottom: 20px;">Trate um ticket específico por vez. Ideal para Aberturas de Vaga e Consultas.</p>
+                <input type="text" id="input_ticket_global_ind" placeholder="Nº do Ticket (Opcional)" style="margin-bottom: 15px; text-align: center; font-weight: bold; border-color: var(--primary-color);">
+                <button class="action-btn" style="background: var(--primary-color);" data-action="iniciarIndividual">Abrir Mesa Individual</button>
+            </div>
+            
+            <div class="door-card fila">
+                <h3 style="color: var(--success-color); margin-top:0;">🏭 Linha de Montagem</h3>
+                <p style="font-size: 13px; color: #666; height: 40px; margin-bottom: 20px;">Modo contínuo. Limpa a mesa automaticamente entre uma vaga e outra.</p>
+                <div style="height: 52px;"></div> <!-- Spacer -->
+                <button class="action-btn" data-action="iniciarFila">Entrar no Modo Fila</button>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="#" data-action="openTabLibre" data-tab="catalogo" style="color: var(--primary-color); font-size: 13px; text-decoration: none; margin-right: 15px;">👥 Consultar Catálogo Livre</a>
+            <a href="#" data-action="openTabLibre" data-tab="relatorios" style="color: var(--primary-color); font-size: 13px; text-decoration: none;">📊 Ver Meus Relatórios</a>
+        </div>
+    </div>
+
+    <div id="screen_tool" class="screen">
+        
+        <div id="fila_banner_global" class="fila-banner-global">
+            <span id="fila_banner_text">⚙️ MODO FILA ATIVADO - Nenhuma vaga em andamento</span>
+            <button class="btn-mini" style="background: #dc3545;" data-action="sairModoFila">Sair do Modo Fila</button>
+        </div>
+
+        <div class="top-bar-ticket">
+            <div>
+                <span style="font-size: 12px; opacity: 0.8; display: block;">Ticket Atual</span>
+                <strong style="font-size: 18px;">#<span id="display_ticket_global">Nenhum</span></strong>
+                <input type="hidden" id="input_ticket_global">
+            </div>
+            <div>
+                <span style="margin-right: 15px; font-size: 13px; opacity: 0.9;">Operador: <span id="display_signature"></span></span>
+                <button class="btn-mini" style="background: #ffc107; color: #333; margin-right: 10px;" data-action="logout">Sair</button>
+                <button class="danger-btn" data-action="encerrar" id="btn_encerrar_global">Encerrar e Limpar Mesa</button>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn" id="tab_fila" data-action="openTab" data-tab="fila" style="display: none;">0. Fila de Acomp</button>
+            <button class="tab-btn" id="tab_abertura" data-action="openTab" data-tab="abertura">1. Abertura</button>
+            <button class="tab-btn" id="tab_abertura_ia" data-action="openTab" data-tab="abertura_ia" style="color: #28a745; font-weight: 900;">🤖 Abertura IA (Beta)</button>
+            <button class="tab-btn" id="tab_acomps" data-action="openTab" data-tab="acomps">2. Super Acomps</button>
+            <button class="tab-btn" id="tab_convocacao" data-action="openTab" data-tab="convocacao">3. Convocação</button>
+            <button class="tab-btn" id="tab_catalogo" data-action="openTab" data-tab="catalogo">4. Catálogo</button>
+            <button class="tab-btn" id="tab_relatorios" data-action="openTab" data-tab="relatorios">5. Relatórios</button>
+        </div>
+
+        <div id="fila" class="tab-content">
+            <div class="panel-padrao" style="background: #e9ecef; border-color: #ced4da;">
+                <label style="color: #495057; font-size: 16px; font-weight: bold; margin-bottom: 10px;">📥 Importar Vagas para a Fila</label>
+                <p style="margin-top: 0; margin-bottom: 15px;">Cole aqui o texto inteiro de um e-mail ou os números soltos. O sistema extrai e enfileira tudo.</p>
+                <textarea class="output-box" id="fila_input" placeholder="Ex: Baixar vagas 123456, 123457 e 123458..." style="border-color: #adb5bd; min-height: 80px;"></textarea>
+                <button class="action-btn" style="margin-top:10px; background-color: #343a40;" data-action="gerarFila">Gerar / Adicionar à Fila</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ddd; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h3 style="margin: 0; color: #333; border: none; padding: 0;">Fila de Trabalho</h3>
+                    <span id="fila_stats" style="font-size: 12px; color: #666; font-weight: 600;">Total: 0 | Pendentes: 0 | Concluídas: 0</span>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; margin: 0; font-weight: bold; color: #555;">
+                        <input type="checkbox" id="toggle_ocultar_concluidas" data-action="toggleOcultarConcluidas"> 👁️ Ocultar Concluídas
+                    </label>
+                    <button class="danger-btn" data-action="limparFila" style="background-color: transparent; color: #dc3545; border: 1px solid #dc3545;">🗑️ Limpar Toda a Fila</button>
+                </div>
+            </div>
+            
+            <div id="fila_container" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Cards renderizados via JS -->
+            </div>
+        </div>
+
+        <div id="abertura" class="tab-content">
+            <div class="robot-box">
+                <div class="extractor-tabs">
+                    <div class="extractor-tab active" data-action="toggleExtractor" data-type="excel">🤖 Robô Excel/PDF (Anti-Freeze)</div>
+                    <div class="extractor-tab" data-action="toggleExtractor" data-type="texto">📄 Robô de E-mail (Texto)</div>
+                </div>
+                
+                <div id="ext_excel" class="extractor-view active">
+                    <strong>Anexe o formulário Excel ou PDF:</strong>
+                    <input type="file" id="excel_upload" accept=".xlsx, .xls, .pdf" style="margin-top: 10px;">
+                </div>
+                
+                <div id="ext_texto" class="extractor-view">
+                    <textarea id="texto_upload" style="min-height: 80px; margin-top:10px; font-size:12px;" placeholder="Cole o corpo do e-mail..."></textarea>
+                    <button class="action-btn" style="background:var(--secondary-color); padding: 8px; margin-top:5px; font-size:13px;" data-action="extrairTexto">Processar Texto</button>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label>Região/Divisão</label>
+                    <input list="lista_regioes" id="ab_regiao" placeholder="Digite ou selecione...">
+                    <datalist id="lista_regioes"><option value="OESTE"><option value="CENTRO"><option value="NORTE"><option value="SUL"><option value="DG"><option value="PÚBLICA"></datalist>
+                </div>
+                <div class="form-group">
+                    <label>Modalidade</label>
+                    <div class="radio-group">
+                        <label class="radio-label"><input type="radio" name="ab_mod" value="OE" checked> Estágio</label>
+                        <label class="radio-label"><input type="radio" name="ab_mod" value="OA"> Aprendiz</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="dg_alert" class="dg-alert">
+                <span><strong>Modo DG:</strong> Cadastre com o ID 1734319.</span>
+                <button class="btn-mini" style="background:#0c5460;" data-action="baixarID_DG">📋 Copiar ID 1734319</button>
+            </div>
+            
+            <div class="row">
+                <div class="form-group"><label>Curso/Arco</label><input list="lista_cursos_antigo" id="ab_curso"><datalist id="lista_cursos_antigo"></datalist></div>
+                <div class="form-group"><label>Empresa</label><input type="text" id="ab_empresa"></div>
+            </div>
+
+            <div class="panel-solicitante">
+                <label style="color: #004c99; font-weight: bold; margin-bottom: 10px;">📋 Dados do Solicitante (Pedido/RH)</label>
+                <div class="row">
+                    <div class="form-group"><label>Nome Solicitante</label><div class="input-group-copy"><input type="text" id="ab_nome_solic" placeholder="Opcional"><button class="btn-mini" style="background:#007bff;" data-action="copiarUnitario" data-target="ab_nome_solic">Copiar</button></div></div>
+                    <div class="form-group"><label>E-mail Solicitante</label><div class="input-group-copy"><input type="text" id="ab_email_solic"><button class="btn-mini" style="background:#007bff;" data-action="copiarUnitario" data-target="ab_email_solic">Copiar</button></div></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><label>Área/Setor</label><div class="input-group-copy"><input type="text" id="ab_setor_solic" value="RH (Operacional Capital)"><button class="btn-mini" style="background:#007bff;" data-action="copiarUnitario" data-target="ab_setor_solic">Copiar</button></div></div>
+                    <div class="form-group"><label>Cargo</label><div class="input-group-copy"><input type="text" id="ab_cargo_solic"><button class="btn-mini" style="background:#007bff;" data-action="copiarUnitario" data-target="ab_cargo_solic">Copiar</button></div></div>
+                </div>
+            </div>
+
+            <div class="panel-supervisor">
+                <label style="color: #856404; font-weight: bold; margin-bottom: 10px;">👤 Dados do Supervisor da Vaga (Apenas Vagas Normais)</label>
+                <div class="row">
+                    <div class="form-group"><label>Nome Supervisor</label><div class="input-group-copy"><input type="text" id="ab_super_nome" placeholder="Opcional"><button class="btn-mini" style="background:#d39e00;" data-action="copiarUnitario" data-target="ab_super_nome">Copiar</button></div></div>
+                    <div class="form-group"><label>E-mail Supervisor</label><div class="input-group-copy"><input type="text" id="ab_super_email"><button class="btn-mini" style="background:#d39e00;" data-action="copiarUnitario" data-target="ab_super_email">Copiar</button></div></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><label>Cargo Supervisor</label><div class="input-group-copy"><input type="text" id="ab_super_cargo"><button class="btn-mini" style="background:#d39e00;" data-action="copiarUnitario" data-target="ab_super_cargo">Copiar</button></div></div>
+                    <div class="form-group"><label>CPF Supervisor</label><div class="input-group-copy"><input type="text" id="ab_super_cpf"><button class="btn-mini" style="background:#d39e00;" data-action="copiarUnitario" data-target="ab_super_cpf">Copiar</button></div></div>
+                </div>
+                <div class="row">
+                    <div class="form-group" style="flex: 1;"><label>DDD</label><div class="input-group-copy"><input type="text" id="ab_super_ddd"><button class="btn-mini" style="background:#d39e00;" data-action="copiarUnitario" data-target="ab_super_ddd">Copiar</button></div></div>
+                    <div class="form-group" style="flex: 2;"><label>Telefone Supervisor</label><div class="input-group-copy"><input type="text" id="ab_super_tel"><button class="btn-mini" style="background:#d39e00;" data-action="copiarUnitario" data-target="ab_super_tel">Copiar</button></div></div>
+                </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
+                <div class="row">
+                    <div class="form-group"><label>Qtd. Vagas</label><input type="text" id="ab_qtd_vagas"></div>
+                    <div class="form-group"><label>Sexo</label><input type="text" id="ab_sexo"></div>
+                    <div class="form-group"><label>Período / Escolaridade</label><input type="text" id="ab_periodo"></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><label id="label_bolsa">Bolsa (R$)</label><input type="text" id="ab_bolsa"></div>
+                    <div class="form-group" style="flex: 1.5;">
+                        <label>Horário (Entrada / Saída)</label>
+                        <div style="display: flex; gap: 10px;"><input type="time" id="ab_horario_entrada"><input type="time" id="ab_horario_saida"></div>
+                    </div>
+                    <div class="form-group"><label>Carga Horária</label><input type="text" id="ab_carga"></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><label>Vale Transporte (R$)</label><input type="text" id="ab_vt"></div>
+                    <div class="form-group"><label>Benefícios / Obs</label><input type="text" id="ab_beneficios"></div>
+                    <div class="form-group"><label>Forma Contato</label><input type="text" id="ab_contato"></div>
+                </div>
+            </div>
+            
+            <div style="border-top: 2px dashed var(--secondary-color); margin: 25px 0; padding-top: 20px;">
+                <div class="row" style="align-items: flex-end;">
+                    
+                    <div class="form-group" style="flex: 1.2;">
+                        <label style="color: #007bff; font-weight: bold;">ID Interno Digital</label>
+                        <div class="input-group-copy">
+                            <input type="text" id="ab_vaga_digital" placeholder="Ex: 5125" style="border: 2px solid #007bff; font-weight: bold; text-align: center;">
+                            <button class="btn-mini" style="background:#17a2b8; white-space: nowrap; visibility: hidden;">🔍 Puxar</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="flex: 1;">
+                        <label>Nº Vaga Kairós</label>
+                        <input type="text" id="ab_vaga" placeholder="Gerado" style="border: 2px solid var(--secondary-color); font-weight: bold; font-size: 16px; text-align: center;">
+                    </div>
+                    
+                    <div class="form-group" style="flex: 2;" id="div_etapa_normal">
+                        <label>Etapa Alinhada</label>
+                        <input list="lista_etapas" id="ab_etapa" placeholder="Etapa Alinhada..." style="border: 1px solid var(--secondary-color);">
+                        <datalist id="lista_etapas"><option value="upload de currículo"><option value="visualizar os currículos no portal"><option value="encaminhamento de currículos via e-mail"></datalist>
+                    </div>
+                </div>
+            </div>
+
+            <button class="action-btn" data-action="gerarAbertura">Gerar Textos Finais</button>
+            
+            <div class="row" style="margin-top: 15px;">
+                <div class="output-wrapper" style="flex: 1;">
+                    <label style="color:#0056b3;">Assunto do Ticket</label>
+                    <textarea class="output-box" id="out_assunto" style="min-height: 50px;"></textarea>
+                    <button class="copy-btn" data-action="copiarEditavel" data-target="out_assunto" data-nome="Abertura (Assunto)">Copiar</button>
+                </div>
+                <div class="output-wrapper" style="flex: 2;">
+                    <label style="color:#0056b3;">Follow Interno (Kairós)</label>
+                    <textarea class="output-box" id="out_follow_abertura"></textarea>
+                    <button class="copy-btn" data-action="copiarEditavel" data-target="out_follow_abertura" data-nome="Abertura (Follow)">Copiar</button>
+                </div>
+            </div>
+
+            <div id="wrapper_resp_normal" class="output-wrapper" style="margin-top: 15px;">
+                <label style="color:#17a2b8;">Resposta ao Cliente (Zendesk - Normal)</label>
+                <textarea class="output-box" id="out_resp_abertura" style="border-color: #17a2b8; background: #f0f9fa; min-height: 150px;"></textarea>
+                <button class="copy-btn" style="background:#17a2b8;" data-action="copiarEditavel" data-target="out_resp_abertura" data-nome="Abertura (Zendesk)">Copiar Resposta</button>
+            </div>
+
+            <div id="wrapper_dg_textos" class="row" style="margin-top: 15px; display: none;">
+                <div class="output-wrapper" style="flex: 1;">
+                    <label style="color:#28a745;">Texto 1 - DG (Abertura)</label>
+                    <textarea class="output-box" id="out_dg_texto1" style="border-color: #28a745; background: #f0f9fa;"></textarea>
+                    <button class="copy-btn" style="background:#28a745;" data-action="copiarEditavel" data-target="out_dg_texto1" data-nome="Abertura DG (1)">Copiar Texto 1</button>
+                </div>
+                <div class="output-wrapper" style="flex: 1;">
+                    <label style="color:#6f42c1;">Texto 2 - DG (Triagem)</label>
+                    <textarea class="output-box" id="out_dg_texto2" style="border-color: #6f42c1; background: #f9f0ff;"></textarea>
+                    <button class="copy-btn" style="background:#6f42c1;" data-action="copiarEditavel" data-target="out_dg_texto2" data-nome="Abertura DG (2)">Copiar Texto 2</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px;">
+                <button class="btn-fixed-text" data-action="copiarTextoFixo" data-tipo="analise">📋 Copiar: Análise de Currículo</button>
+                <button class="btn-fixed-text" data-action="copiarTextoFixo" data-tipo="presencial">📋 Copiar: Processo Presencial</button>
+            </div>
+        </div>
+
+        <!-- <!-- ================================================== -->
+        <!-- NOVA ABA: ABERTURA COM INTELIGÊNCIA ARTIFICIAL     -->
+        <!-- ================================================== -->
+        <div id="abertura_ia" class="tab-content">
+            <div class="robot-box" style="background: #e8f5e9; border-color: #28a745; display: flex; justify-content: space-between; align-items: center;">
+                <div style="text-align: left;">
+                    <strong style="color: #155724; font-size: 16px;">🧠 Revisão da Inteligência Artificial</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #155724;">Valide os filtros, gerencie seus Kits Padrão e envie para o Kairós.</p>
+                </div>
+                <button class="action-btn" style="width: auto; padding: 10px 20px; font-size: 14px;" data-action="extrairZendeskIA">🔍 Extrair do Zendesk</button>
+            </div>
+
+            <div class="panel-padrao" style="background: #fff; border-color: #ced4da;">
+                <div class="row">
+                    <div class="form-group">
+                        <label>Nível Escolar</label>
+                        <select id="ia_nivel_escolar" style="background: #f8f9fa; font-weight: bold;">
+                            <option value="Superior">Superior</option>
+                            <option value="Médio">Médio</option>
+                            <option value="Técnico">Técnico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Área Profissional</label>
+                        <select id="ia_area_profissional" style="background: #f8f9fa;">
+                            <option value="Administrativa">Administrativa</option>
+<option value="Agroindústria">Agroindústria</option>
+<option value="Agropecuária">Agropecuária</option>
+<option value="Alimentos">Alimentos</option>
+<option value="Área profissional estágio">Área profissional estágio</option>
+<option value="Arquitetura e Urbanismo">Arquitetura e Urbanismo</option>
+<option value="Arquivologia">ARQUIVOLOGIA</option>
+<option value="Artes">Artes</option>
+<option value="Atendimento ao cliente">Atendimento ao cliente</option>
+<option value="Audiovisual - Graduação">Audiovisual - Graduação</option>
+<option value="Biblioteca">Biblioteca</option>
+<option value="Biblioteca e Arquivologia">Biblioteca e Arquivologia</option>
+<option value="Biologia">Biologia</option>
+<option value="Biomedicina">Biomedicina</option>
+<option value="Campo do direito">Campo do direito</option>
+<option value="Comércio Exterior">Comércio Exterior</option>
+<option value="Comunicação">Comunicação</option>
+<option value="Construção Civil">Construção Civil</option>
+<option value="Contabilidade">Contabilidade</option>
+<option value="Design">Design</option>
+<option value="Destaques áreas profissionais por mercado">Destaques áreas profissionais por mercado</option>
+<option value="Economia">Economia</option>
+<option value="Educação">Educação</option>
+<option value="Elétrica-Eletrônica">Elétrica-Eletrônica</option>
+<option value="Embelezamento/Estética">Embelezamento/Estética</option>
+<option value="Enfermagem">Enfermagem</option>
+<option value="Engenharia Ambiental">Engenharia Ambiental</option>
+<option value="Engenharia de minas">Engenharia de minas</option>
+<option value="Engenharia de Petróleo e Gás">ENGENHARIA DE PETROLEO E GÁS</option>
+<option value="Engenharia de Produção">Engenharia de Produção</option>
+<option value="Engenharia Mecânica">Engenharia Mecânica</option>
+<option value="Ensino Médio">Ensino Médio</option>
+<option value="Esportes">Esportes</option>
+<option value="Estatística">Estatística</option>
+<option value="Farmácia">Farmácia</option>
+<option value="Financeiro">FINANCEIRO</option>
+<option value="Fisioterapia">Fisioterapia</option>
+<option value="Gastronomia">Gastronomia</option>
+<option value="Geociências">Geociências</option>
+<option value="Geomática">Geomática</option>
+<option value="Indústria">Indústria</option>
+<option value="Informática">Informática</option>
+<option value="Instituições Financeiras">Instituições Financeiras</option>
+<option value="Letras">Letras</option>
+<option value="Licenciatura">Licenciatura</option>
+<option value="Marketing">Marketing</option>
+<option value="Meio Ambiente">Meio Ambiente</option>
+<option value="Mineração">Mineração</option>
+<option value="Moda">Moda</option>
+<option value="Museologia">Museologia</option>
+<option value="Nutrição">Nutrição</option>
+<option value="Odontologia">Odontologia</option>
+<option value="Pesquisa">Pesquisa</option>
+<option value="Produção Mecânica">Produção Mecânica</option>
+<option value="Projetos - Superior">Projetos - Superior</option>
+<option value="Psicologia">Psicologia</option>
+<option value="Química">Química</option>
+<option value="Recursos Humanos">Recursos Humanos</option>
+<option value="Recursos Pesqueiros">Recursos Pesqueiros</option>
+<option value="Relações Internacionais">RELACOES INTERNACIONAIS</option>
+<option value="Religião">Religião</option>
+<option value="Saúde">Saúde</option>
+<option value="Secretariado">Secretariado</option>
+<option value="Segurança">Segurança</option>
+<option value="Social">Social</option>
+<option value="SP Urbanismo">SP URBANISMO</option>
+<option value="Telecomunicações">Telecomunicações</option>
+<option value="Todas as áreas profissionais">Todas as áreas profissionais</option>
+<option value="Transportes">Transportes</option>
+<option value="Turismo/Lazer">Turismo/Lazer</option>
+<option value="Veterinária">Veterinária</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Modalidade</label>
+                        <select id="ia_modalidade" style="background: #f8f9fa;">
+                            <option value="Estágio">Estágio</option>
+                            <option value="Aprendiz">Aprendiz</option>
+                        </select>
+                    </div>
+                    <!-- CAMPO SEXO NOVO -->
+                    <div class="form-group">
+                        <label>Sexo</label>
+                        <select id="ia_sexo" style="background: #f8f9fa;">
+                            <option value="Ambos">Ambos</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="Masculino">Masculino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- GERENCIADOR DE KITS/PADRÕES -->
+                <div style="background: #eef2f5; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; border: 1px dashed #b8daff; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                        <label style="margin: 0; color: #004c99;">📦 Kits Padrão:</label>
+                        <select id="ia_seletor_kits" style="width: 250px; padding: 6px; font-size: 12px;">
+                            <option value="">Selecione um Kit para carregar...</option>
+                        </select>
+                        <button class="btn-mini" style="background: #007bff;" id="btn_carregar_kit">Carregar Kit</button>
+                    </div>
+                    <button class="btn-mini" style="background: #28a745;" id="btn_salvar_kit">💾 Salvar Atual como Novo Kit</button>
+                </div>
+
+               <!-- CAMPO DE CURSOS (TAGS) -->
+                <div class="form-group" style="position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="color: var(--primary-color);">📚 Cursos</label>
+                        <button class="btn-mini" style="background: #007bff; font-size: 10px; padding: 4px 8px;" id="btn_add_curso_banco">📥 Adicionar Vários Cursos (Lote)</button>
+                    </div>
+                    <div class="tag-container" id="container_tags_cursos">
+                        <input type="text" class="tag-input" id="input_busca_cursos" placeholder="Digite para buscar e adicionar...">
+                    </div>
+                    <div class="autocomplete-dropdown" id="dropdown_cursos"></div>
+                </div>
+
+                <!-- CAMPO DE ATIVIDADES (TAGS) -->
+                <div class="form-group" style="position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="color: var(--primary-color);">🛠️ Atividades (No mínimo 3)</label>
+                        <button class="btn-mini" style="background: #007bff; font-size: 10px; padding: 4px 8px;" id="btn_add_ativ_banco">📥 Adicionar Várias Ativ. (Lote)</button>
+                    </div>
+                    <div class="tag-container" id="container_tags_atividades">
+                        <input type="text" class="tag-input" id="input_busca_atividades" placeholder="Digite para buscar e adicionar...">
+                    </div>
+                    <div class="autocomplete-dropdown" id="dropdown_atividades"></div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>💰 Bolsa Auxílio</label>
+                        <div style="display:flex; gap: 5px;">
+                            <select id="ia_bolsa_tipo" style="width: 40%;"><option value="Fixo">Fixo</option><option value="A combinar">A combinar</option></select>
+                            <input type="text" id="ia_bolsa_valor" placeholder="R$ 0,00" style="width: 60%;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>🚌 Auxílio Transporte</label>
+                        <div style="display:flex; gap: 5px;">
+                            <select id="ia_vt_tipo" style="width: 40%;"><option value="Mensal">Mensal</option><option value="Diário">Diário</option><option value="A combinar">A combinar</option></select>
+                            <input type="text" id="ia_vt_valor" placeholder="R$ 0,00" style="width: 60%;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group" style="flex: 1.5;">
+                        <label>🕒 Horário (Entrada / Saída)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="time" id="ia_horario_entrada">
+                            <input type="time" id="ia_horario_saida">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>⏱️ Carga Horária</label>
+                        <input type="time" id="ia_carga_horaria">
+                    </div>
+                    <div class="form-group">
+                        <label>📆 Semestre (Mín / Máx)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="ia_semestre_min" placeholder="Ex: 2" min="1" max="10">
+                            <input type="number" id="ia_semestre_max" placeholder="Ex: 6" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="action-btn" style="background-color: #28a745; font-size: 18px; box-shadow: 0 4px 15px rgba(40,167,69,0.3);" id="btn_enviar_kairos">🚀 Validar e Enviar para Kairós</button>
+        </div>
+
+
+        <div id="acomps" class="tab-content">
+            
+            <div class="panel-padrao">
+                <label style="color: #0056b3; font-size: 16px; font-weight: bold; margin-bottom: 15px;">⚡ Ações Rápidas (Envios de CV e Acomps Padronizados)</label>
+                
+                <div class="form-group">
+                    <label>Selecione a Ação:</label>
+                    <select id="acomp_tipo" style="border-color: #80bdff; font-weight: bold;">
+                        <option value="padrao_inicial">Cobrança Inicial Padrão (Empresa)</option>
+                        <option value="envio_curriculos_link" style="color: green;">🔗 Envio de Currículos (Novo Portal - Link e Senha)</option>
+                        <option value="envio_curriculos_zip">📦 Envio de Currículos (Legado - Gerar ZIP)</option>
+                        <option value="envio_curriculos_avulso">📨 Envio de Currículos (Legado - PDF Avulso)</option>
+                        <option value="dg_abertura">DG: Abertura de Vaga (Zendesk)</option>
+                        <option value="dg_acomp">DG: Acomp Inicial</option>
+                        <option value="dg_cobranca">DG: Cobrança de Retorno</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="form-group"><label>Empresa</label><input type="text" id="acomp_nome"></div>
+                    <div class="form-group"><label>Nº Vaga</label><input type="text" id="acomp_vaga"></div>
+                    <div class="form-group"><label>Curso</label><input type="text" id="acomp_curso"></div>
+                </div>
+
+                <!-- MÓDULO DE VINCULAÇÃO EM LOTE -->
+                <div id="painel_vagas_multiplas" style="background: #fdf7e7; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ffe8a1; display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="color: #856404; font-weight: bold; margin: 0;">🛒 Vagas Vinculadas a este Ticket</label>
+                        <span id="contador_vagas_lote" style="font-size: 11px; font-weight: bold; color: #856404;">1 Vaga(s)</span>
+                    </div>
+                    
+                    <div class="input-group-copy" style="max-width: 400px; margin-bottom: 10px;">
+                        <input type="text" id="input_vincular_vaga" placeholder="Digite o nº da vaga extra e aperte Vincular..." style="font-size: 13px;">
+                        <button class="action-btn" style="background:#28a745; width: auto; padding: 8px 15px;" id="btn_add_vaga_lote">➕ Vincular</button>
+                    </div>
+                    
+                    <div id="container_vagas_lote" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                    </div>
+                    
+                    <button id="btn_gerar_multiplo" class="action-btn" style="background: #6f42c1; display: none;">Gerar Resposta Múltipla (Lote)</button>
+                </div>
+                <!-- ============================== -->
+
+                <div class="row">
+                    <div class="form-group"><label style="color: #28a745;">🔗 Link do Portal</label><input type="text" id="acomp_link" placeholder="Ex: https://talentos..."></div>
+                    <div class="form-group"><label style="color: #28a745;">🔑 Senha do Portal</label><input type="text" id="acomp_senha" placeholder="Ex: 350234"></div>
+                </div>
+
+                <div id="zip_module" class="robot-box" style="display: none; background: #e8f5e9; border-color: #28a745;">
+                    <strong>📚 Zipador Automático:</strong> Selecione os PDFs.<input type="file" id="pdf_upload" multiple accept=".pdf" style="margin-top: 10px;">
+                    <button class="action-btn" style="background: #28a745; margin-top: 10px;" data-action="processarZip">Processar ZIP</button>
+                </div>
+
+                <button id="btn_gerar_acomp" class="action-btn" style="background: #0056b3;" data-action="gerarAcomp">Gerar Resposta Rápida + Log Kairós</button>
+                
+                <div class="row">
+                    <div class="output-wrapper" style="flex: 2;">
+                        <label style="color:#0056b3;">Mensagem Zendesk</label>
+                        <textarea class="output-box" id="out_acomp"></textarea>
+                        <button class="copy-btn" data-action="copiarEditavel" data-target="out_acomp" data-nome="Acompanhamento (Zendesk)">Copiar</button>
+                    </div>
+                    <div class="output-wrapper" style="flex: 1; display: none;" id="div_acomp_log">
+                        <label style="color:#0056b3;">Log Interno</label>
+                        <textarea class="output-box" id="out_acomp_log"></textarea>
+                        <button class="copy-btn" data-action="copiarEditavel" data-target="out_acomp_log" data-nome="Acompanhamento (Log)">Copiar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-complexo">
+                <label style="color: #856404; font-size: 16px; font-weight: bold; margin-bottom: 15px;">🧠 Super Acomps (Aprovações, Alterações e Dúvidas)</label>
+                
+                <div class="row">
+                    <div class="form-group"><label>Canal de Contato</label><select id="reg_canal"><option value="E-mail">E-mail</option><option value="Telefone">Telefone</option><option value="WhatsApp">WhatsApp</option></select></div>
+                    <div class="form-group"><label>Contato na Empresa</label><input type="text" id="reg_contato" placeholder="Ex: Tayanne"></div>
+                    <div class="form-group"><label>Nº da Vaga</label><input type="text" id="reg_vaga"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Qual foi o motivo / ação principal?</label>
+                    <select id="reg_motivo" style="border-color: #ffe8a1; font-weight: bold;">
+                        <option value="" disabled selected>Selecione uma ação estratégica...</option>
+                        <option value="cobranca">⏳ Cobrança de Retorno sobre Currículos</option>
+                        <option value="duvidas">🗣️ Alinhamento / Dúvidas Sanadas</option>
+                        <option value="perfil_restrito">⚠️ Perfil Restrito / Sugerir Flexibilização</option>
+                        <option value="solicitacao_novos_cand">🔄 Empresa solicita novos candidatos (Nova Etapa)</option>
+                        <option value="alteracao_perfil">✏️ Alteração de Perfil / Requisitos</option>
+                        <option value="alteracao_bolsa">💰 Alteração de Bolsa / Benefícios</option>
+                        <option value="aprova_aprendiz">🎉 Aprovação de Candidato (Aprendiz)</option>
+                        <option value="aprova_estagio">🎉 Aprovação de Candidato (Estágio)</option>
+                        <option value="cancelamento">🛑 Cancelamento de Vaga</option>
+                    </select>
+                </div>
+
+                <div id="div_perfil_restrito" class="dynamic-field" style="background: #fff3cd; border-color: #ffeeba;">
+                    <label style="color: #856404; margin-bottom: 8px;">O que você sugere flexibilizar para atrair mais candidatos?</label>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <label class="radio-label"><input type="checkbox" id="sug_bolsa"> Bolsa Maior</label>
+                        <label class="radio-label"><input type="checkbox" id="sug_semestre"> Semestres/Período</label>
+                        <label class="radio-label"><input type="checkbox" id="sug_idade"> Idade</label>
+                        <label class="radio-label"><input type="checkbox" id="sug_curso"> Cursos Correlatos</label>
+                        <label class="radio-label"><input type="checkbox" id="sug_horario"> Horário</label>
+                    </div>
+                </div>
+
+                <div id="div_alt_perfil" class="dynamic-field"><div class="row"><div class="form-group"><label>De:</label><input type="text" id="reg_perfil_de"></div><div class="form-group"><label>Para:</label><input type="text" id="reg_perfil_para"></div></div></div>
+                <div id="div_alt_bolsa" class="dynamic-field"><div class="row"><div class="form-group"><label>De:</label><input type="text" id="reg_bolsa_de"></div><div class="form-group"><label>Para:</label><input type="text" id="reg_bolsa_para"></div></div></div>
+                <div id="div_aprovacao" class="dynamic-field" style="background: #e8f5e9; border-color: #28a745;"><div class="form-group"><label style="color: #155724;">Candidato Aprovado:</label><input type="text" id="reg_candidato_aprovado"></div></div>
+                <div id="div_cancelamento" class="dynamic-field" style="background: #f8d7da; border-color: #f5c6cb;">
+                    <div class="form-group"><label style="color: #721c24;">Motivo do Cancelamento:</label><select id="reg_motivo_canc"><option value="Aprovação externa / Vaga já preenchida">Aprovação externa / Vaga já preenchida</option><option value="Falta de retorno da empresa">Falta de retorno da empresa</option><option value="Solicitação da empresa">Solicitação da empresa</option></select></div>
+                </div>
+
+                <button class="action-btn" style="background: #d39e00; color: #fff;" data-action="gerarRegistro">Gerar Resposta Estruturada + Log</button>
+                
+                <div class="row">
+                    <div class="output-wrapper" style="flex: 1;">
+                        <label style="color:#856404;">Log Interno</label>
+                        <textarea class="output-box" id="out_registro"></textarea>
+                        <button class="copy-btn" style="background:#d39e00;" data-action="copiarEditavel" data-target="out_registro" data-nome="Registro Interno">Copiar</button>
+                    </div>
+                    <div class="output-wrapper" style="flex: 1;">
+                        <label style="color:#856404;">Resposta ao Cliente (Zendesk)</label>
+                        <textarea class="output-box" id="out_resposta_cliente"></textarea>
+                        <button class="copy-btn" style="background:#d39e00;" data-action="copiarEditavel" data-target="out_resposta_cliente" data-nome="Resposta Cliente">Copiar</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="convocacao" class="tab-content">
+            <div class="form-group">
+                <label>Tipo de Convocação</label>
+                <select id="conv_tipo"><option value="agendado">📅 Processo Agendado (Repasse CR)</option><option value="prioridade">⚠️ Prioridade de Captação</option></select>
+            </div>
+            <div class="row">
+                <div class="form-group"><label>Nº da Vaga</label><input type="text" id="conv_vaga"></div>
+                <div class="form-group"><label>Região (DG, ZONA OESTE, etc.)</label><input type="text" id="conv_regiao" placeholder="Ex: DG"></div>
+            </div>
+
+            <div id="div_conv_agendado">
+                <div class="row"><div class="form-group"><label>Empresa</label><input type="text" id="conv_empresa"></div><div class="form-group"><label>Modalidade</label><input type="text" id="conv_mod"></div></div>
+                <div class="row"><div class="form-group"><label>Data</label><input type="text" id="conv_data"></div><div class="form-group"><label>Horário</label><input type="text" id="conv_hora"></div></div>
+                <div class="form-group"><label>Endereço Completo</label><input type="text" id="conv_end"></div>
+                <div class="row"><div class="form-group"><label>Procurar por</label><input type="text" id="conv_contato"></div><div class="form-group"><label>Saldo Encaminhados</label><input type="text" id="conv_saldo"></div></div>
+            </div>
+
+            <div id="div_conv_prioridade" style="display: none;"><div class="form-group"><label>Curso/Perfil</label><input type="text" id="conv_curso"></div></div>
+
+            <button class="action-btn" style="background:#fd7e14;" data-action="gerarConvocacao">Gerar Solicitação</button>
+            <div class="row">
+                <div class="output-wrapper" style="flex: 1;"><label style="color:#0056b3;">Assunto</label><textarea class="output-box" id="out_conv_assunto" style="min-height: 50px;"></textarea><button class="copy-btn" data-action="copiarEditavel" data-target="out_conv_assunto" data-nome="Convocação">Copiar</button></div>
+                <div class="output-wrapper" style="flex: 2;"><label style="color:#17a2b8;">Texto</label><textarea class="output-box" id="out_conv_texto"></textarea><button class="copy-btn" style="background:#17a2b8;" data-action="copiarEditavel" data-target="out_conv_texto" data-nome="Convocação">Copiar</button></div>
+            </div>
+        </div>
+
+        <div id="catalogo" class="tab-content">
+            <div class="search-bar"><input type="text" id="busca_catalogo" placeholder="Buscar consultor por nome, região ou cargo..."></div>
+            <div id="lista_contatos" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <div id="relatorios" class="tab-content">
+            <div class="dashboard-cards">
+                <div class="dash-card"><h3 style="color: #333;" id="dash_total">0</h3><p>Tickets Totais</p></div>
+                <div class="dash-card"><h3 style="color: #17a2b8;" id="dash_aberturas">0</h3><p style="color: #17a2b8;">Aberturas</p></div>
+                <div class="dash-card"><h3 style="color: #28a745;" id="dash_envios">0</h3><p style="color: #28a745;">Envios CV</p></div>
+                <div class="dash-card"><h3 style="color: #6f42c1;" id="dash_acomps">0</h3><p style="color: #6f42c1;">Acomps</p></div>
+                <div class="dash-card"><h3 style="color: #ffc107;" id="dash_alt">0</h3><p style="color: #ffc107;">Alterações</p></div>
+                <div class="dash-card"><h3 style="color: #dc3545;" id="dash_canc">0</h3><p style="color: #dc3545;">Cancelados</p></div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button class="btn-mini" style="background: #28a745;" data-action="exportarCSV">Exportar p/ Cronos (CSV)</button>
+                <button class="btn-mini" style="background: #007bff;" data-action="exportarJSON">Exportar Backup (JSON)</button>
+                <button class="btn-mini" style="background: #6f42c1;" data-action="importarJSONBotao">Importar Backup (JSON)</button>
+                <button class="btn-mini" style="background: #dc3545;" data-action="limparLogs">Limpar Histórico Diário</button>
+            </div>
+            <input type="file" id="import_json" style="display:none" accept=".json">
+            <table class="data-table">
+                <thead><tr><th>Data/Hora</th><th>Ticket</th><th>Ação / Categoria</th><th>Vaga/Empresa</th><th>Próx. Acomp</th></tr></thead>
+                <tbody id="tabela_logs"></tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- Scripts de Bibliotecas (Libs) -->
+<script src="js/libs/firebase-app-compat.js"></script>
+<script src="js/libs/firebase-database-compat.js"></script>
+<script src="js/libs/jszip.min.js"></script>
+<script src="js/libs/xlsx.full.min.js"></script>
+<script src="js/libs/FileSaver.min.js"></script>
+<script src="js/libs/recorder.js"></script>
+<script src="js/libs/pdf.min.js"></script>
+
+<!-- Scripts do Core (Núcleo) -->
+<script src="js/core/catalogo-kairos.js"></script>
+<script src="js/core/firebase-config.js"></script>
+<script src="js/core/utils.js"></script>
+<script src="js/core/gemini-api.js"></script>
+
+<!-- Scripts do Hub (Operacional) -->
+<script src="js/hub/extractor.js"></script>
+<script src="js/hub/generator.js"></script>
+<script src="js/hub/queue-manager.js"></script>
+<script src="js/hub/ui-controller.js"></script>
+<script src="js/hub/ia-beta.js"></script>
+<script src="js/hub/app.js"></script>
+
+</body>
+</html>
