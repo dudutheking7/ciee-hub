@@ -1,0 +1,1 @@
+Desktop 0.2 loads the CIEE Hub 4.1.4 UI locally and maps chrome.storage, chrome.runtime, chrome.tabs, chrome.downloads and low-level input commands to WebView2/Desktop equivalents. Runtime portal validation is still required because portal DOMs are external dependencies.
